@@ -1,8 +1,8 @@
 import type { Category, FoodItem } from "@/types";
+import { randomIllustration } from "@/types";
 import { initialCategories } from "@/data/initial-categories";
 import { initialFoods } from "@/data/initial-foods";
 
-// Check if running inside Tauri
 function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
@@ -14,8 +14,14 @@ let sqliteDb: Awaited<ReturnType<typeof import("@tauri-apps/plugin-sql")["defaul
 async function getSqliteDb() {
   if (!sqliteDb) {
     const Database = (await import("@tauri-apps/plugin-sql")).default;
-    sqliteDb = await Database.load("sqlite:nezumihole.db");
-    await initSqliteTables();
+    const db = await Database.load("sqlite:nezumihole.db");
+    sqliteDb = db;
+    try {
+      await initSqliteTables();
+    } catch (e) {
+      sqliteDb = null;
+      throw e;
+    }
   }
   return sqliteDb;
 }
@@ -28,8 +34,7 @@ async function initSqliteTables() {
       name TEXT NOT NULL,
       icon TEXT NOT NULL DEFAULT '',
       parentId TEXT,
-      sortOrder INTEGER NOT NULL DEFAULT 0,
-      FOREIGN KEY (parentId) REFERENCES categories(id) ON DELETE SET NULL
+      sortOrder INTEGER NOT NULL DEFAULT 0
     )
   `);
 
@@ -45,12 +50,16 @@ async function initSqliteTables() {
       rating REAL,
       notes TEXT,
       images TEXT NOT NULL DEFAULT '[]',
+      illustration INTEGER NOT NULL DEFAULT 1,
       isFavorite INTEGER NOT NULL DEFAULT 0,
       createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL,
-      FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE CASCADE
+      updatedAt TEXT NOT NULL
     )
   `);
+
+  try {
+    await db.execute("ALTER TABLE food_items ADD COLUMN illustration INTEGER NOT NULL DEFAULT 1");
+  } catch { /* column already exists */ }
 
   const countResult = await db.select<{ count: number }[]>(
     "SELECT COUNT(*) as count FROM categories",
@@ -60,34 +69,60 @@ async function initSqliteTables() {
   }
 }
 
+async function sqlInsertFood(db: NonNullable<typeof sqliteDb>, food: FoodItem) {
+  await db.execute(
+    `INSERT OR REPLACE INTO food_items
+       (id, name, categoryId, items, illustration, isFavorite, createdAt, updatedAt)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [food.id, food.name, food.categoryId,
+     JSON.stringify(food.items), food.illustration ?? randomIllustration(),
+     food.isFavorite ? 1 : 0, food.createdAt, food.updatedAt],
+  );
+  await db.execute(
+    `UPDATE food_items
+     SET region = $1, location = $2, source = $3, rating = $4, notes = $5, images = $6
+     WHERE id = $7`,
+    [food.region, food.location, food.source, food.rating, food.notes,
+     JSON.stringify(food.images), food.id],
+  );
+}
+
 async function seedSqliteData() {
   const db = sqliteDb!;
   for (const cat of initialCategories) {
-    await db.execute(
-      "INSERT INTO categories (id, name, icon, parentId, sortOrder) VALUES ($1, $2, $3, $4, $5)",
-      [cat.id, cat.name, cat.icon, cat.parentId, cat.sortOrder],
-    );
+    try {
+      await db.execute(
+        "INSERT OR REPLACE INTO categories (id, name, icon, parentId, sortOrder) VALUES ($1, $2, $3, $4, $5)",
+        [cat.id, cat.name, cat.icon, cat.parentId, cat.sortOrder],
+      );
+    } catch (e) {
+      console.error(`[seed] category ${cat.id} failed:`, e);
+    }
   }
+  let ok = 0;
+  let fail = 0;
   for (const food of initialFoods) {
-    await db.execute(
-      `INSERT INTO food_items (id, name, categoryId, region, location, source, items, rating, notes, images, isFavorite, createdAt, updatedAt)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-      [food.id, food.name, food.categoryId, food.region, food.location, food.source,
-       JSON.stringify(food.items), food.rating, food.notes, JSON.stringify(food.images),
-       food.isFavorite ? 1 : 0, food.createdAt, food.updatedAt],
-    );
+    try {
+      const f = { ...food, illustration: randomIllustration() };
+      await sqlInsertFood(db, f);
+      ok++;
+    } catch (e) {
+      fail++;
+      console.error(`[seed] food ${food.id} failed:`, e);
+    }
   }
+  console.log(`[seed] done: ${ok} ok, ${fail} failed out of ${initialFoods.length}`);
 }
 
 interface RawFoodRow {
   id: string; name: string; categoryId: string;
   region: string | null; location: string | null; source: string | null;
   items: string; rating: number | null; notes: string | null;
-  images: string; isFavorite: number; createdAt: string; updatedAt: string;
+  images: string; illustration: number; isFavorite: number; createdAt: string; updatedAt: string;
 }
 
 function rowToFoodItem(row: RawFoodRow): FoodItem {
-  return { ...row, items: JSON.parse(row.items || "[]"), images: JSON.parse(row.images || "[]"), isFavorite: row.isFavorite === 1 };
+  return { ...row, items: JSON.parse(row.items || "[]"), images: JSON.parse(row.images || "[]"), illustration: row.illustration || 1, isFavorite: row.isFavorite === 1 };
 }
 
 // ==================== In-Memory Backend (Browser Dev) ====================
@@ -147,13 +182,7 @@ export async function deleteCategory(id: string): Promise<void> {
 export async function insertFood(food: FoodItem): Promise<void> {
   if (!isTauri()) { memFoods.unshift(food); return; }
   const db = await getSqliteDb();
-  await db.execute(
-    `INSERT INTO food_items (id, name, categoryId, region, location, source, items, rating, notes, images, isFavorite, createdAt, updatedAt)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-    [food.id, food.name, food.categoryId, food.region, food.location, food.source,
-     JSON.stringify(food.items), food.rating, food.notes, JSON.stringify(food.images),
-     food.isFavorite ? 1 : 0, food.createdAt, food.updatedAt],
-  );
+  await sqlInsertFood(db, food);
 }
 
 export async function updateFoodItem(id: string, updates: Partial<FoodItem>): Promise<void> {
@@ -175,6 +204,7 @@ export async function updateFoodItem(id: string, updates: Partial<FoodItem>): Pr
   if (updates.rating !== undefined) { fields.push(`rating = $${i++}`); values.push(updates.rating); }
   if (updates.notes !== undefined) { fields.push(`notes = $${i++}`); values.push(updates.notes); }
   if (updates.images !== undefined) { fields.push(`images = $${i++}`); values.push(JSON.stringify(updates.images)); }
+  if (updates.illustration !== undefined) { fields.push(`illustration = $${i++}`); values.push(updates.illustration); }
   if (updates.isFavorite !== undefined) { fields.push(`isFavorite = $${i++}`); values.push(updates.isFavorite ? 1 : 0); }
   fields.push(`updatedAt = $${i++}`); values.push(now);
   if (fields.length > 0) {
@@ -228,13 +258,8 @@ export async function importData(jsonStr: string): Promise<{ categories: number;
     );
   }
   for (const food of data.foods) {
-    await db.execute(
-      `INSERT INTO food_items (id, name, categoryId, region, location, source, items, rating, notes, images, isFavorite, createdAt, updatedAt)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-      [food.id, food.name, food.categoryId, food.region, food.location, food.source,
-       JSON.stringify(food.items), food.rating, food.notes, JSON.stringify(food.images),
-       food.isFavorite ? 1 : 0, food.createdAt, food.updatedAt],
-    );
+    const f = { ...food, illustration: food.illustration || randomIllustration() };
+    await sqlInsertFood(db, f);
   }
   return { categories: data.categories.length, foods: data.foods.length };
 }

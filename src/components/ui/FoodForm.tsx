@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus } from "lucide-react";
 import type { FoodItem, Category } from "@/types";
+import { FOOD_ILLUSTRATION_COUNT, getFoodIllustrationPath, randomIllustration } from "@/types";
 
 interface FoodFormProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function FoodForm({
   const [items, setItems] = useState<string[]>([""]);
   const [rating, setRating] = useState<string>("");
   const [notes, setNotes] = useState("");
+  const [illustration, setIllustration] = useState(1);
 
   useEffect(() => {
     if (editingFood) {
@@ -37,6 +39,7 @@ export function FoodForm({
       setItems(editingFood.items.length > 0 ? editingFood.items : [""]);
       setRating(editingFood.rating?.toString() || "");
       setNotes(editingFood.notes || "");
+      setIllustration(editingFood.illustration || 1);
     } else {
       resetForm();
     }
@@ -51,6 +54,7 @@ export function FoodForm({
     setItems([""]);
     setRating("");
     setNotes("");
+    setIllustration(randomIllustration());
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,6 +71,7 @@ export function FoodForm({
       rating: rating ? parseFloat(rating) : null,
       notes: notes.trim() || null,
       images: editingFood?.images || [],
+      illustration,
       isFavorite: editingFood?.isFavorite || false,
     });
     onClose();
@@ -216,6 +221,23 @@ export function FoodForm({
                     )}
                   </div>
                 ))}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">食物插画</label>
+                <div className="form-illustration-picker">
+                  {Array.from({ length: FOOD_ILLUSTRATION_COUNT }, (_, i) => i + 1).map((idx) => (
+                    <motion.button
+                      key={idx}
+                      type="button"
+                      className={`form-illustration-option ${illustration === idx ? "form-illustration-active" : ""}`}
+                      onClick={() => setIllustration(idx)}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <img src={getFoodIllustrationPath(idx)} alt={`插画 ${idx}`} />
+                    </motion.button>
+                  ))}
+                </div>
               </div>
 
               <div className="form-group">

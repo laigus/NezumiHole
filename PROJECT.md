@@ -39,19 +39,22 @@
 - [x] Web Audio API 合成音效系统（点击、收藏叮咚、随机推荐、主题切换、删除、添加）
 - [x] 主题系统重构：原"玻璃"主题重命名为"磨砂玻璃"（frosted），新增"晶莹剔透"（liquid-glass）主题
 - [x] 晶莹剔透主题 — 3D 厚玻璃方案初版实现（5 层 CSS 叠加：厚度渐变 + specular highlight + 棱镜色散边框 + 多层阴影 + 方向性边框）
+- [x] **可爱插画风主题全面升级**（粉色系配色、手绘风格卡片虚线边框、侧边栏凸出标签效果、心形装饰、✿ 装饰元素等）
+- [x] **食物插画系统**（33 种 AI 生成食物插画，每张卡片随机分配，编辑时可横向滚动选择）
+- [x] **SQLite 参数兼容性修复** — 将 14 参数 INSERT 拆分为 8 参数 INSERT + 7 参数 UPDATE 两步操作，解决 Tauri SQL 插件 `$10`+ 参数解析问题
+- [x] **数据库外键约束移除** — 移除 categories 和 food_items 表的 FOREIGN KEY 约束，避免 Tauri SQL 插件中 PRAGMA 跨连接失效问题
+- [x] **开发/打包环境配置** — Node.js、pnpm、Rust、VS Build Tools 2022 全套安装，配置国内镜像（Rustup、Tauri Bundler GitHub Mirror）
 
 ### 进行中 / 痛点
 
-- [ ] **[痛点] 晶莹剔透主题的"晶莹感"不足** — 当前纯 CSS 实现（radial-gradient 高光 + conic-gradient 棱镜边框 + 多层 box-shadow）已经过多轮调整，但用户反馈仍然缺少真实玻璃的"晶莹剔透"通透感。可能的突破方向：
-  - 尝试 SVG filter（如 `feTurbulence` + `feSpecularLighting`）模拟真实光照折射
-  - 引入动态效果：鼠标移动时 specular highlight 跟随偏移（模拟真实光源变化）
-  - 使用 WebGL shader（如 three.js 或 pixi.js）做真正的玻璃材质渲染，然后叠加到 CSS 布局上
-  - 考虑在卡片背景使用高质量的玻璃纹理贴图（透明 PNG/WebP）
-  - 参考素材在 `素材/` 文件夹中（hi2262913417.jpg 等），目标效果：参考图中那种 3D 厚实玻璃块，有可见的厚度、棱镜色散和光反射
+- [ ] **[痛点] 晶莹剔透主题的"晶莹感"不足** — 当前纯 CSS 实现已经过多轮调整，但仍缺少真实玻璃的通透感。可能的突破方向：SVG filter、WebGL shader、高质量玻璃纹理贴图等
+- [ ] **[痛点] 卡片动画性能问题** — 当分类下条目较多时（如餐厅美食），首屏卡片动画播完后，后续卡片仍在依次做入场动画，体验差。需要优化：只对可视区域内的卡片播放动画，或限制同时动画的卡片数量
+- [ ] **继续生成插画素材** — 用 GPT 生成更多食物插画，丰富卡片视觉效果
+- [ ] **动态插画管理脚本** — 实现一个脚本工具，自动压缩新图片并放入 `public/food-illustrations/`，自动更新 `FOOD_ILLUSTRATION_COUNT`，无需手动修改代码
 
 ### 待完成
 
-- [ ] 可爱插画风添加手绘风装饰元素（小老鼠、食物插画等）
+- [ ] 可爱插画风添加更多手绘风装饰元素（小老鼠吉祥物、背景纹理等）
 - [ ] 更多主题（暖色美食风、简约清新风、暗黑高级风等）
 
 ## 技术栈
@@ -116,6 +119,7 @@
 | rating | number \| null | 评分 1-5 |
 | notes | string \| null | 备注 |
 | images | string[] | 图片路径列表 |
+| illustration | number | 食物插画编号（1-33，对应 `public/food-illustrations/food-N.png`）|
 | isFavorite | boolean | 是否收藏 |
 | createdAt | datetime | 创建时间 |
 | updatedAt | datetime | 更新时间 |
@@ -129,8 +133,11 @@ NezumiHole/
 │   ├── src/
 │   │   ├── lib.rs          # Tauri 应用入口 + 插件注册
 │   │   └── main.rs         # Windows 入口
+│   ├── capabilities/       # Tauri 权限配置（SQL 插件等）
 │   ├── Cargo.toml
 │   └── tauri.conf.json     # Tauri 配置（窗口大小、应用名等）
+├── public/
+│   └── food-illustrations/ # 食物插画（food-1.png ~ food-33.png，400px 宽，约 3.3MB 总计）
 ├── src/                    # React 前端
 │   ├── assets/             # 静态资源
 │   │   ├── sounds/         # 音效文件
@@ -138,17 +145,17 @@ NezumiHole/
 │   │   └── illustrations/  # 插画素材
 │   ├── components/
 │   │   ├── layout/         # 布局组件（Sidebar）
-│   │   └── ui/             # UI 组件（FoodCard, SearchBar, RandomWheel, ThemeSwitcher）
-│   ├── pages/              # 页面（待开发）
-│   ├── themes/             # 主题 CSS 变量 + 主题切换逻辑
+│   │   └── ui/             # UI 组件（FoodCard, FoodForm, SearchBar, RandomWheel, ThemeSwitcher）
+│   ├── themes/             # 主题 CSS 变量 + 主题切换逻辑（theme.css）
 │   ├── hooks/              # 自定义 Hooks（useTheme, useSound）
 │   ├── store/              # 状态管理（useAppStore）
-│   ├── types/              # TypeScript 类型定义
+│   ├── types/              # TypeScript 类型定义（含 FOOD_ILLUSTRATION_COUNT 等）
 │   ├── data/               # 初始数据（categories, foods）
-│   ├── lib/                # 工具函数
+│   ├── lib/                # 数据库操作（database.ts）
 │   ├── App.tsx             # 主应用组件
 │   ├── main.tsx            # React 入口
-│   └── styles.css          # 全局样式
+│   └── styles.css          # 全局样式 + 主题特定样式
+├── 素材/                    # 原始素材（AI 生成的插画原图等）
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -162,7 +169,15 @@ NezumiHole/
 - Node.js >= 18
 - pnpm >= 8
 - Rust（通过 rustup 安装）
+- Visual Studio Build Tools 2022（含"使用 C++ 的桌面开发"工作负载）
 - Tauri CLI（通过 pnpm 的 @tauri-apps/cli 已包含）
+
+**国内镜像配置**（加速下载）：
+```powershell
+$env:RUSTUP_DIST_SERVER = "https://rsproxy.cn"
+$env:RUSTUP_UPDATE_ROOT = "https://rsproxy.cn/rustup"
+$env:TAURI_BUNDLER_TOOLS_GITHUB_MIRROR = "https://ghfast.top"
+```
 
 ### 常用命令
 
@@ -195,9 +210,12 @@ NSIS 安装包是推荐的分发格式，双击即可安装运行。
 
 ### 数据库
 
-使用 SQLite 本地数据库，数据文件存储在用户的应用数据目录中。首次启动时自动创建表结构并导入初始数据。
+使用 SQLite 本地数据库（通过 `tauri-plugin-sql`），数据文件存储在 `%APPDATA%/com.tssh.nezumi-hole/nezumihole.db`。首次启动时自动创建表结构并导入初始数据。浏览器开发模式下自动降级为内存存储。
 
-> 注：当前版本数据存储在内存中（React state），SQLite 持久化待接入。
+**注意事项**：
+- 表定义不使用 FOREIGN KEY 约束（Tauri SQL 插件的 PRAGMA 跨连接失效）
+- 14+ 参数的 INSERT 拆分为多步操作（Tauri SQL 插件 `$10`+ 参数解析问题）
+- 如需清除数据重新初始化，删除上述 db 文件并重启应用即可
 
 ## 初始数据
 

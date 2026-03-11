@@ -5,21 +5,21 @@
 /* ---------- Cute Theme (Light) ---------- */
 :root[data-theme="cute"][data-color-mode="light"],
 :root[data-theme="cute"] {
-  --color-bg-primary: #FDF6EE;
-  --color-bg-secondary: #F5E6D4;
-  --color-bg-card: #FFFAF5;
-  --color-bg-hover: #FFF3E8;
-  --color-text-primary: #4A3728;
-  --color-text-secondary: #8B7355;
-  --color-text-muted: #B8A08A;
-  --color-accent: #FF8C69;
-  --color-accent-hover: #FF7043;
-  --color-accent-soft: #FFE0D3;
+  --color-bg-primary: #FFF0F0;
+  --color-bg-secondary: #FFE4E4;
+  --color-bg-card: #FFFAFA;
+  --color-bg-hover: #FFE8E8;
+  --color-text-primary: #5C3A3A;
+  --color-text-secondary: #9B6B6B;
+  --color-text-muted: #CCA0A0;
+  --color-accent: #FF7B8A;
+  --color-accent-hover: #FF5C6E;
+  --color-accent-soft: #FFD6DB;
   --color-favorite: #FF6B8A;
-  --color-border: #E8D4BC;
-  --color-shadow: rgba(255, 140, 105, 0.15);
-  --radius-card: 1rem;
-  --radius-button: 0.875rem;
+  --color-border: #F5C4C4;
+  --color-shadow: rgba(255, 120, 140, 0.15);
+  --radius-card: 1.125rem;
+  --radius-button: 1rem;
   --radius-input: 0.75rem;
   --font-heading: "LXGW WenKai", cursive, system-ui;
   --font-body: "LXGW WenKai", system-ui, sans-serif;
@@ -32,18 +32,18 @@
 
 /* ---------- Cute Theme (Dark) ---------- */
 :root[data-theme="cute"][data-color-mode="dark"] {
-  --color-bg-primary: #2A1F17;
-  --color-bg-secondary: #3A2D22;
-  --color-bg-card: #352A20;
-  --color-bg-hover: #40332A;
-  --color-text-primary: #F5E6D8;
-  --color-text-secondary: #C8B09A;
-  --color-text-muted: #8B7355;
-  --color-accent: #FF8C69;
-  --color-accent-hover: #FFA07A;
-  --color-accent-soft: #4A2E20;
+  --color-bg-primary: #2A1A1E;
+  --color-bg-secondary: #3A2228;
+  --color-bg-card: #352025;
+  --color-bg-hover: #40282E;
+  --color-text-primary: #F5E0E4;
+  --color-text-secondary: #C8A0A8;
+  --color-text-muted: #8B5560;
+  --color-accent: #FF7B8A;
+  --color-accent-hover: #FF9DAA;
+  --color-accent-soft: #4A2028;
   --color-favorite: #FF6B8A;
-  --color-border: #4A3728;
+  --color-border: #4A2830;
   --color-shadow: rgba(0, 0, 0, 0.3);
 }
 

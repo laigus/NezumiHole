@@ -1,4 +1,5 @@
 import type { FoodItem } from "@/types";
+import { randomIllustration } from "@/types";
 
 function item(
   id: string,
@@ -19,6 +20,7 @@ function item(
     rating: null,
     notes: null,
     images: [],
+    illustration: randomIllustration(),
     isFavorite: false,
     createdAt: now,
     updatedAt: now,

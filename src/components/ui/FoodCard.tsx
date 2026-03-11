@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Heart, MapPin, ShoppingBag, Star } from "lucide-react";
 import type { FoodItem, Category } from "@/types";
+import { getFoodIllustrationPath } from "@/types";
 
 interface FoodCardProps {
   food: FoodItem;
@@ -22,7 +23,12 @@ export function FoodCard({ food, category, onToggleFavorite, onClick, index }: F
       onClick={() => onClick(food)}
     >
       <div className="food-card-header">
-        <h3 className="food-card-name">{food.name}</h3>
+        <div className="food-card-header-left">
+          <h3 className="food-card-name">{food.name}</h3>
+          {category && (
+            <span className="food-card-badge">{category.name}</span>
+          )}
+        </div>
         <motion.button
           className="food-card-fav"
           onClick={(e) => {
@@ -39,9 +45,14 @@ export function FoodCard({ food, category, onToggleFavorite, onClick, index }: F
         </motion.button>
       </div>
 
-      {category && (
-        <span className="food-card-badge">{category.name}</span>
-      )}
+      <div className="food-card-illustration">
+        <img
+          src={getFoodIllustrationPath(food.illustration)}
+          alt=""
+          className="food-card-illustration-img"
+          loading="lazy"
+        />
+      </div>
 
       {food.items.length > 0 && (
         <div className="food-card-items">
