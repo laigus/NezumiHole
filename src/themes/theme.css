@@ -1,0 +1,149 @@
+/* ============================================
+   Theme System — CSS Custom Properties
+   ============================================ */
+
+/* ---------- Cute Theme (Light) ---------- */
+:root[data-theme="cute"][data-color-mode="light"],
+:root[data-theme="cute"] {
+  --color-bg-primary: #FDF6EE;
+  --color-bg-secondary: #F5E6D4;
+  --color-bg-card: #FFFAF5;
+  --color-bg-hover: #FFF3E8;
+  --color-text-primary: #4A3728;
+  --color-text-secondary: #8B7355;
+  --color-text-muted: #B8A08A;
+  --color-accent: #FF8C69;
+  --color-accent-hover: #FF7043;
+  --color-accent-soft: #FFE0D3;
+  --color-favorite: #FF6B8A;
+  --color-border: #E8D4BC;
+  --color-shadow: rgba(255, 140, 105, 0.15);
+  --radius-card: 1rem;
+  --radius-button: 0.875rem;
+  --radius-input: 0.75rem;
+  --font-heading: "LXGW WenKai", cursive, system-ui;
+  --font-body: "LXGW WenKai", system-ui, sans-serif;
+  --cat-color-dog: #7CB342;
+  --cat-color-restaurant: #FF8C69;
+  --cat-color-snack: #F06292;
+  --cat-color-drink: #42A5F5;
+  --cat-color-wanttry: #FFB74D;
+}
+
+/* ---------- Cute Theme (Dark) ---------- */
+:root[data-theme="cute"][data-color-mode="dark"] {
+  --color-bg-primary: #2A1F17;
+  --color-bg-secondary: #3A2D22;
+  --color-bg-card: #352A20;
+  --color-bg-hover: #40332A;
+  --color-text-primary: #F5E6D8;
+  --color-text-secondary: #C8B09A;
+  --color-text-muted: #8B7355;
+  --color-accent: #FF8C69;
+  --color-accent-hover: #FFA07A;
+  --color-accent-soft: #4A2E20;
+  --color-favorite: #FF6B8A;
+  --color-border: #4A3728;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* ---------- Frosted Theme (Light) ---------- */
+:root[data-theme="frosted"][data-color-mode="light"] {
+  --color-bg-primary: #E8EDFF;
+  --color-bg-secondary: rgba(255, 255, 255, 0.45);
+  --color-bg-card: rgba(255, 255, 255, 0.55);
+  --color-bg-hover: rgba(255, 255, 255, 0.75);
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #4A4A6A;
+  --color-text-muted: #8888AA;
+  --color-accent: #6C63FF;
+  --color-accent-hover: #5A52E0;
+  --color-accent-soft: rgba(108, 99, 255, 0.15);
+  --color-favorite: #FF6B8A;
+  --color-border: rgba(255, 255, 255, 0.5);
+  --color-shadow: rgba(108, 99, 255, 0.12);
+  --radius-card: 1.125rem;
+  --radius-button: 0.75rem;
+  --radius-input: 0.625rem;
+  --font-heading: "LXGW WenKai", cursive, system-ui;
+  --font-body: "LXGW WenKai", system-ui, sans-serif;
+  --glass-blur: 20px;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* ---------- Frosted Theme (Dark) ---------- */
+:root[data-theme="frosted"][data-color-mode="dark"] {
+  --color-bg-primary: #0A0A18;
+  --color-bg-secondary: rgba(25, 25, 55, 0.6);
+  --color-bg-card: rgba(30, 30, 65, 0.5);
+  --color-bg-hover: rgba(45, 45, 80, 0.6);
+  --color-text-primary: #E8E8F0;
+  --color-text-secondary: #A0A0C0;
+  --color-text-muted: #6666AA;
+  --color-accent: #8B83FF;
+  --color-accent-hover: #A09AFF;
+  --color-accent-soft: rgba(139, 131, 255, 0.2);
+  --color-favorite: #FF6B8A;
+  --color-border: rgba(100, 100, 200, 0.2);
+  --color-shadow: rgba(0, 0, 0, 0.4);
+  --glass-blur: 24px;
+  --glass-border: 1px solid rgba(100, 100, 200, 0.18);
+}
+
+/* ---------- Liquid Glass Theme (Light) ---------- */
+:root[data-theme="liquid-glass"][data-color-mode="light"] {
+  --color-bg-primary: #cdd4e4;
+  --color-bg-secondary: rgba(255, 255, 255, 0.25);
+  --color-bg-card: rgba(255, 255, 255, 0.12);
+  --color-bg-hover: rgba(255, 255, 255, 0.35);
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #3a3a5c;
+  --color-text-muted: #7878a0;
+  --color-accent: #6366f1;
+  --color-accent-hover: #4f46e5;
+  --color-accent-soft: rgba(99, 102, 241, 0.15);
+  --color-favorite: #f472b6;
+  --color-border: rgba(255, 255, 255, 0.5);
+  --color-shadow: rgba(30, 40, 80, 0.12);
+  --radius-card: 1.25rem;
+  --radius-button: 0.875rem;
+  --radius-input: 0.75rem;
+  --font-heading: "LXGW WenKai", cursive, system-ui;
+  --font-body: "LXGW WenKai", system-ui, sans-serif;
+  --glass-blur: 1px;
+  --glass-specular: rgba(255, 255, 255, 0.55);
+  --glass-rim-bright: rgba(255, 255, 255, 0.75);
+  --glass-rim-dim: rgba(255, 255, 255, 0.2);
+  --glass-base-dark: rgba(0, 20, 60, 0.05);
+  --glass-cast-shadow: 0 8px 32px rgba(30, 40, 80, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --glass-cast-shadow-hover: 0 14px 44px rgba(30, 40, 80, 0.18), 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Liquid Glass Theme (Dark) ---------- */
+:root[data-theme="liquid-glass"][data-color-mode="dark"] {
+  --color-bg-primary: #0a0a14;
+  --color-bg-secondary: rgba(30, 30, 60, 0.4);
+  --color-bg-card: rgba(40, 40, 80, 0.15);
+  --color-bg-hover: rgba(60, 60, 100, 0.3);
+  --color-text-primary: #e8e8f8;
+  --color-text-secondary: #a8a8cc;
+  --color-text-muted: #6868a0;
+  --color-accent: #818cf8;
+  --color-accent-hover: #a5b4fc;
+  --color-accent-soft: rgba(129, 140, 248, 0.2);
+  --color-favorite: #f472b6;
+  --color-border: rgba(140, 150, 255, 0.18);
+  --color-shadow: rgba(0, 0, 0, 0.5);
+  --radius-card: 1.25rem;
+  --radius-button: 0.875rem;
+  --radius-input: 0.75rem;
+  --font-heading: "LXGW WenKai", cursive, system-ui;
+  --font-body: "LXGW WenKai", system-ui, sans-serif;
+  --glass-blur: 1px;
+  --glass-specular: rgba(200, 210, 255, 0.35);
+  --glass-rim-bright: rgba(180, 190, 255, 0.5);
+  --glass-rim-dim: rgba(120, 130, 220, 0.15);
+  --glass-base-dark: rgba(0, 0, 20, 0.1);
+  --glass-cast-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
+  --glass-cast-shadow-hover: 0 14px 44px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.2);
+}
