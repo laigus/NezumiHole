@@ -91,6 +91,11 @@ export default function App() {
     [editingFood, store, sound],
   );
 
+  const handleCardClick = useCallback((food: FoodItem) => {
+    sound.play("click");
+    setSelectedFood(food);
+  }, [sound]);
+
   const handleAddNew = useCallback(() => {
     sound.play("click");
     setEditingFood(null);
@@ -188,7 +193,7 @@ export default function App() {
                 food={food}
                 category={store.getCategoryById(food.categoryId)}
                 onToggleFavorite={handleToggleFavorite}
-                onClick={(f) => { sound.play("click"); setSelectedFood(f); }}
+                onClick={handleCardClick}
                 index={index}
               />
             ))}

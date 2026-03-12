@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Heart, MapPin, ShoppingBag, Star } from "lucide-react";
 import type { FoodItem, Category } from "@/types";
@@ -11,13 +12,19 @@ interface FoodCardProps {
   index: number;
 }
 
-export function FoodCard({ food, category, onToggleFavorite, onClick, index }: FoodCardProps) {
+const MAX_STAGGER_INDEX = 15;
+
+export const FoodCard = memo(function FoodCard({ food, category, onToggleFavorite, onClick, index }: FoodCardProps) {
   return (
     <motion.div
       className="food-card"
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.3 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{
+        delay: index < MAX_STAGGER_INDEX ? index * 0.03 : 0,
+        duration: 0.3,
+      }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
       layout
       onClick={() => onClick(food)}
@@ -91,4 +98,4 @@ export function FoodCard({ food, category, onToggleFavorite, onClick, index }: F
       </div>
     </motion.div>
   );
-}
+});

@@ -44,13 +44,13 @@
 - [x] **SQLite 参数兼容性修复** — 将 14 参数 INSERT 拆分为 8 参数 INSERT + 7 参数 UPDATE 两步操作，解决 Tauri SQL 插件 `$10`+ 参数解析问题
 - [x] **数据库外键约束移除** — 移除 categories 和 food_items 表的 FOREIGN KEY 约束，避免 Tauri SQL 插件中 PRAGMA 跨连接失效问题
 - [x] **开发/打包环境配置** — Node.js、pnpm、Rust、VS Build Tools 2022 全套安装，配置国内镜像（Rustup、Tauri Bundler GitHub Mirror）
+- [x] **卡片动画性能优化** — `whileInView` + `viewport={{ once: true }}`，首屏 15 张交错延迟、其余即时显示；FoodCard `React.memo` 减少重渲染
 
 ### 进行中 / 痛点
 
 - [ ] **[痛点] 晶莹剔透主题的"晶莹感"不足** — 当前纯 CSS 实现已经过多轮调整，但仍缺少真实玻璃的通透感。可能的突破方向：SVG filter、WebGL shader、高质量玻璃纹理贴图等
-- [ ] **[痛点] 卡片动画性能问题** — 当分类下条目较多时（如餐厅美食），首屏卡片动画播完后，后续卡片仍在依次做入场动画，体验差。需要优化：只对可视区域内的卡片播放动画，或限制同时动画的卡片数量
 - [ ] **继续生成插画素材** — 用 GPT 生成更多食物插画，丰富卡片视觉效果
-- [ ] **动态插画管理脚本** — 实现一个脚本工具，自动压缩新图片并放入 `public/food-illustrations/`，自动更新 `FOOD_ILLUSTRATION_COUNT`，无需手动修改代码
+- [x] **动态插画管理脚本** — `pnpm illustrations` 自动压缩新图片、重命名、更新 `FOOD_ILLUSTRATION_COUNT`
 
 ### 待完成
 
@@ -155,7 +155,10 @@ NezumiHole/
 │   ├── App.tsx             # 主应用组件
 │   ├── main.tsx            # React 入口
 │   └── styles.css          # 全局样式 + 主题特定样式
+├── scripts/
+│   └── manage-illustrations.mjs  # 插画管理脚本（压缩/重命名/更新计数）
 ├── 素材/                    # 原始素材（AI 生成的插画原图等）
+│   └── new-illustrations/   # 新插画暂存目录（放入后运行 pnpm illustrations）
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -186,7 +189,23 @@ pnpm install          # 安装依赖
 pnpm dev              # 仅启动前端开发服务器（localhost:1420）
 pnpm tauri dev        # 启动 Tauri 桌面应用开发模式（含前端热重载）
 pnpm tauri build      # 打包为 exe（输出到 src-tauri/target/release/bundle/）
+pnpm illustrations    # 处理新插画（压缩+重命名+更新计数）
 ```
+
+### 添加新食物插画
+
+1. 将新图片（支持 png/jpg/webp/gif/avif）放入 `素材/new-illustrations/` 目录
+2. 运行 `pnpm illustrations`
+3. 脚本自动完成：压缩为 400px 宽 PNG → 重命名为 `food-{N}.png` → 移入 `public/food-illustrations/` → 更新 `FOOD_ILLUSTRATION_COUNT` 常量
+4. 暂存目录中已处理的图片会被自动清理
+
+其他用法：
+- `pnpm illustrations --sync` — 仅同步计数（不处理新图片）
+- `pnpm illustrations --add <path>` — 从指定目录添加图片
+- `pnpm illustrations --delete 15` — 删除 food-15.png 并自动重新编号
+- `pnpm illustrations --delete 10,15,20` — 批量删除多张并重新编号
+- `pnpm illustrations --reindex` — 重新编号所有图片（填补间隔）
+- `pnpm illustrations --width 500` — 指定输出宽度（默认 400px）
 
 ### 打包为 exe
 
