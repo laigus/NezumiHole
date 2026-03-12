@@ -5,45 +5,45 @@
 /* ---------- Cute Theme (Light) ---------- */
 :root[data-theme="cute"][data-color-mode="light"],
 :root[data-theme="cute"] {
-  --color-bg-primary: #FFF0F0;
-  --color-bg-secondary: #FFE4E4;
-  --color-bg-card: #FFFAFA;
-  --color-bg-hover: #FFE8E8;
-  --color-text-primary: #5C3A3A;
-  --color-text-secondary: #9B6B6B;
-  --color-text-muted: #CCA0A0;
-  --color-accent: #FF7B8A;
-  --color-accent-hover: #FF5C6E;
-  --color-accent-soft: #FFD6DB;
-  --color-favorite: #FF6B8A;
-  --color-border: #F5C4C4;
-  --color-shadow: rgba(255, 120, 140, 0.15);
+  --color-bg-primary: #FFF3EC;
+  --color-bg-secondary: #FFE6D8;
+  --color-bg-card: #FFFAF6;
+  --color-bg-hover: #FFEADD;
+  --color-text-primary: #5A3828;
+  --color-text-secondary: #9B7060;
+  --color-text-muted: #C8A090;
+  --color-accent: #F08870;
+  --color-accent-hover: #E87060;
+  --color-accent-soft: #FFD8CC;
+  --color-favorite: #F07080;
+  --color-border: #F0C8B8;
+  --color-shadow: rgba(220, 130, 100, 0.15);
   --radius-card: 1.125rem;
   --radius-button: 1rem;
   --radius-input: 0.75rem;
   --font-heading: "LXGW WenKai", cursive, system-ui;
   --font-body: "LXGW WenKai", system-ui, sans-serif;
   --cat-color-dog: #7CB342;
-  --cat-color-restaurant: #FF8C69;
-  --cat-color-snack: #F06292;
-  --cat-color-drink: #42A5F5;
-  --cat-color-wanttry: #FFB74D;
+  --cat-color-restaurant: #F08860;
+  --cat-color-snack: #E87890;
+  --cat-color-drink: #5BA8D0;
+  --cat-color-wanttry: #F0A850;
 }
 
 /* ---------- Cute Theme (Dark) ---------- */
 :root[data-theme="cute"][data-color-mode="dark"] {
-  --color-bg-primary: #2A1A1E;
-  --color-bg-secondary: #3A2228;
-  --color-bg-card: #352025;
-  --color-bg-hover: #40282E;
-  --color-text-primary: #F5E0E4;
-  --color-text-secondary: #C8A0A8;
-  --color-text-muted: #8B5560;
-  --color-accent: #FF7B8A;
-  --color-accent-hover: #FF9DAA;
-  --color-accent-soft: #4A2028;
-  --color-favorite: #FF6B8A;
-  --color-border: #4A2830;
+  --color-bg-primary: #2A1C18;
+  --color-bg-secondary: #3A2820;
+  --color-bg-card: #352820;
+  --color-bg-hover: #402E25;
+  --color-text-primary: #F5E4D8;
+  --color-text-secondary: #C8A898;
+  --color-text-muted: #8B6050;
+  --color-accent: #F08870;
+  --color-accent-hover: #F0A090;
+  --color-accent-soft: #4A2820;
+  --color-favorite: #F07080;
+  --color-border: #4A3028;
   --color-shadow: rgba(0, 0, 0, 0.3);
 }
 

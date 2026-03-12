@@ -1,8 +1,16 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { Heart, MapPin, ShoppingBag, Star } from "lucide-react";
+import { MapPin, ShoppingBag, Star } from "lucide-react";
 import type { FoodItem, Category } from "@/types";
-import { getFoodIllustrationPath } from "@/types";
+import { getFoodIllustrationPath, getCardBgPath } from "@/types";
+
+function CuteHeart({ size = 18, filled = false, color = "currentColor" }: { size?: number; filled?: boolean; color?: string }) {
+  return (
+    <svg width={size} height={size * 0.8} viewBox="0 0 24 20" fill={filled ? color : "none"} stroke={color} strokeWidth={filled ? 0 : 1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 18.5C12 18.5 1 12 1 7C1 3.5 3.8 1.2 7.2 1.2C9.5 1.2 11.1 2.5 12 4.5C12.9 2.5 14.5 1.2 16.8 1.2C20.2 1.2 23 3.5 23 7C23 12 12 18.5 12 18.5Z" />
+    </svg>
+  );
+}
 
 interface FoodCardProps {
   food: FoodItem;
@@ -29,6 +37,13 @@ export const FoodCard = memo(function FoodCard({ food, category, onToggleFavorit
       layout
       onClick={() => onClick(food)}
     >
+      <img
+        src={getCardBgPath(food.id)}
+        alt=""
+        className="food-card-bg"
+        loading="lazy"
+        draggable={false}
+      />
       <div className="food-card-header">
         <div className="food-card-header-left">
           <h3 className="food-card-name">{food.name}</h3>
@@ -44,9 +59,9 @@ export const FoodCard = memo(function FoodCard({ food, category, onToggleFavorit
           }}
           whileTap={{ scale: 1.3 }}
         >
-          <Heart
-            size={18}
-            fill={food.isFavorite ? "var(--color-favorite)" : "none"}
+          <CuteHeart
+            size={20}
+            filled={food.isFavorite}
             color={food.isFavorite ? "var(--color-favorite)" : "var(--color-text-muted)"}
           />
         </motion.button>
