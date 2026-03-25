@@ -26,11 +26,14 @@ export function TitleBar() {
   }, []);
 
   return (
-    <div
-      className="titlebar"
-      onMouseDown={handleDrag}
-      onDoubleClick={handleDoubleClick}
-    >
+    <>
+      {/* Invisible drag region covering the full top edge */}
+      <div
+        className="titlebar-drag-region"
+        onMouseDown={handleDrag}
+        onDoubleClick={handleDoubleClick}
+      />
+      {/* Window control buttons pinned to top-right corner */}
       <div className="titlebar-controls">
         <button
           className="titlebar-btn titlebar-btn-minimize"
@@ -75,6 +78,6 @@ export function TitleBar() {
           </svg>
         </button>
       </div>
-    </div>
+    </>
   );
 }

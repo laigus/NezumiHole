@@ -145,7 +145,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app-container${isTauri ? " has-titlebar" : ""}`}>
+    <div className="app-container">
       {isTauri && <TitleBar />}
       <Sidebar
         categories={store.topCategories}

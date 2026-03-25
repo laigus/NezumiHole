@@ -191,7 +191,7 @@
   border-color: transparent;
 }
 [data-theme="cute"] .food-card:hover .food-card-bg {
-  filter: drop-shadow(0 8px 16px rgba(160, 90, 60, 0.35)) drop-shadow(0 2px 4px rgba(160, 90, 60, 0.2));
+  filter: drop-shadow(0 6px 12px rgba(160, 90, 60, 0.3)) drop-shadow(0 2px 4px rgba(160, 90, 60, 0.18));
 }
 
 /* Card badge — compact pink tag */
@@ -1000,22 +1000,28 @@
    Custom Title Bar (Tauri — no native decorations)
    ============================================ */
 
-.titlebar {
+/* Invisible drag region: covers full top edge for window dragging */
+.titlebar-drag-region {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 32px;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  user-select: none;
+  height: 36px;
+  z-index: 9998;
+  -webkit-app-region: drag;
+  app-region: drag;
 }
 
+/* Window control buttons: pinned to top-right corner */
 .titlebar-controls {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 9999;
   display: flex;
-  height: 100%;
+  height: 32px;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 .titlebar-btn {
@@ -1048,10 +1054,6 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
-}
-
-.app-container.has-titlebar {
-  padding-top: 32px;
 }
 
 /* ============================================
@@ -1157,6 +1159,7 @@
   align-items: baseline;
   gap: 12px;
   margin-bottom: 20px;
+  padding-top: 12px;
 }
 
 .main-title {
@@ -1286,7 +1289,9 @@
 .main-scroll-area {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 0;
+  overflow-x: hidden;
+  padding: 16px 16px 0;
+  margin: -16px -16px 0;
 }
 
 .food-grid {
@@ -1312,11 +1317,11 @@
 }
 
 [data-theme="frosted"] .food-card:hover {
-  box-shadow: 0 8px 32px rgba(108, 99, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 6px 24px rgba(108, 99, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .food-card:hover {
-  box-shadow: 0 8px 24px var(--color-shadow);
+  box-shadow: 0 6px 18px var(--color-shadow);
   border-color: var(--color-accent-soft);
 }
 
