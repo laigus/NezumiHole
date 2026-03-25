@@ -350,11 +350,15 @@ pnpm illustrations    # 管理食物插画
 
 ### 待完成
 
+- [ ] **PWA 手机版 (iOS)** — 详见 `.cursor/rules/MOBILE-SYNC-PLAN.md`
+- [ ] **Cloudflare D1 云同步** — 详见 `.cursor/rules/MOBILE-SYNC-PLAN.md`
 - [ ] 可爱主题添加更多手绘装饰元素（小老鼠吉祥物、背景纹理）
 - [ ] 更多主题（暖色美食风、简约清新风、暗黑高级风等）
 - [ ] 晶莹剔透主题突破（SVG filter / WebGL）
 - [ ] 卡片背景图升级为高分辨率精细版本
-- [ ] 卡片数量多时动画性能优化（当前所有卡片依次动画，体验差）
+- [x] 卡片动画性能优化（whileInView + 延迟上限 + React.memo）
+- [x] 标题栏融入主内容区（不再单独占一行，改为浮动拖拽区域 + 右上角按钮）
+- [x] 卡片阴影截断修复（滚动区域 padding/margin 补偿 + 阴影微调）
 
 ### 已知问题
 
