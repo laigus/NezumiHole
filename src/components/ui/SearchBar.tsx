@@ -32,6 +32,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
           <X size={16} />
         </motion.button>
       )}
+      <img src="/search-heart.png" alt="" className="search-bar-heart" draggable={false} />
     </motion.div>
   );
 }

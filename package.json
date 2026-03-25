@@ -17,6 +17,7 @@
     "framer-motion": "^12",
     "howler": "^2.2.4",
     "lucide-react": "^0.500",
+    "lxgw-wenkai-webfont": "1.7.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7",

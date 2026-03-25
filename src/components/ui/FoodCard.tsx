@@ -78,14 +78,14 @@ export const FoodCard = memo(function FoodCard({ food, category, onToggleFavorit
 
       {food.items.length > 0 && (
         <div className="food-card-items">
-          {food.items.slice(0, 4).map((item, i) => (
+          {food.items.slice(0, 2).map((item, i) => (
             <span key={i} className="food-card-tag">
               {item}
             </span>
           ))}
-          {food.items.length > 4 && (
+          {food.items.length > 2 && (
             <span className="food-card-tag food-card-tag-more">
-              +{food.items.length - 4}
+              +{food.items.length - 2}
             </span>
           )}
         </div>

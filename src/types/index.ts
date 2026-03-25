@@ -23,7 +23,7 @@ export interface FoodItem {
   updatedAt: string;
 }
 
-export const FOOD_ILLUSTRATION_COUNT = 33;
+export const FOOD_ILLUSTRATION_COUNT = 32;
 export function getFoodIllustrationPath(index: number): string {
   const i = ((index - 1) % FOOD_ILLUSTRATION_COUNT) + 1;
   return `/food-illustrations/food-${i}.png`;
@@ -32,7 +32,7 @@ export function randomIllustration(): number {
   return Math.floor(Math.random() * FOOD_ILLUSTRATION_COUNT) + 1;
 }
 
-export const CARD_BG_COUNT = 12;
+export const CARD_BG_COUNT = 16;
 const _sessionSalt = Math.random();
 export function getCardBgPath(foodId: string): string {
   let hash = 0;

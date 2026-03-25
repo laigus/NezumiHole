@@ -41,3 +41,10 @@ WixTools/
 
 # Design reference assets
 素材/
+
+# Backup files
+*.backup.json
+nezumihole-backup-*.json
+
+# Python virtual environment
+.venv/

@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { TitleBar } from "@/components/layout/TitleBar";
 import { FoodCard } from "@/components/ui/FoodCard";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { SubCategoryFilter } from "@/components/ui/SubCategoryFilter";
@@ -16,6 +17,8 @@ import { useAppStore } from "@/store";
 import { useTheme } from "@/hooks/useTheme";
 import { useSound } from "@/hooks/useSound";
 import type { FoodItem } from "@/types";
+
+const isTauri = "__TAURI_INTERNALS__" in window;
 
 export default function App() {
   const store = useAppStore();
@@ -142,7 +145,8 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className={`app-container${isTauri ? " has-titlebar" : ""}`}>
+      {isTauri && <TitleBar />}
       <Sidebar
         categories={store.topCategories}
         selectedCategoryId={store.selectedCategoryId}
@@ -164,6 +168,7 @@ export default function App() {
             >
               {currentCategoryName}
             </motion.h2>
+            <img src="/title-deco.png" alt="" className="main-title-deco" draggable={false} />
             <span className="main-count">{displayedFoods.length} 条记录</span>
           </div>
           <motion.button
@@ -185,33 +190,35 @@ export default function App() {
           onSelect={(id) => { sound.play("click"); store.setSelectedSubCategoryId(id); }}
         />
 
-        <motion.div className="food-grid" layout>
-          <AnimatePresence mode="popLayout">
-            {displayedFoods.map((food, index) => (
-              <FoodCard
-                key={food.id}
-                food={food}
-                category={store.getCategoryById(food.categoryId)}
-                onToggleFavorite={handleToggleFavorite}
-                onClick={handleCardClick}
-                index={index}
-              />
-            ))}
-          </AnimatePresence>
+        <div className="main-scroll-area">
+          <motion.div className="food-grid" layout>
+            <AnimatePresence mode="popLayout">
+              {displayedFoods.map((food, index) => (
+                <FoodCard
+                  key={food.id}
+                  food={food}
+                  category={store.getCategoryById(food.categoryId)}
+                  onToggleFavorite={handleToggleFavorite}
+                  onClick={handleCardClick}
+                  index={index}
+                />
+              ))}
+            </AnimatePresence>
 
-          {displayedFoods.length === 0 && (
-            <motion.div
-              className="empty-state"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <span className="empty-icon">🔍</span>
-              <p className="empty-text">
-                {store.searchQuery ? "没有找到匹配的美食" : "这个分类还没有记录"}
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
+            {displayedFoods.length === 0 && (
+              <motion.div
+                className="empty-state"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <span className="empty-icon">🔍</span>
+                <p className="empty-text">
+                  {store.searchQuery ? "没有找到匹配的美食" : "这个分类还没有记录"}
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        </div>
       </main>
 
       <FoodDetail

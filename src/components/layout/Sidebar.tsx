@@ -50,8 +50,10 @@ export function Sidebar({
           className="sidebar-title"
           whileHover={{ scale: 1.02 }}
         >
-          🐭 耗耗洞
+          <img src="/hamster-icon.png" alt="" className="sidebar-title-icon" draggable={false} />
+          <span className="sidebar-title-emoji">🐭 </span>耗耗洞
         </motion.h1>
+        <img src="/divider.png" alt="" className="sidebar-header-divider" draggable={false} />
       </div>
 
       <nav className="sidebar-nav">
