@@ -26,7 +26,7 @@ pnpm tauri build        # 打包为 exe 安装包
 ```
 
 > **打包为 exe 后路径**：
-> `D:\AI\NezumiHole\src-tauri\target\release\nezumi-hole.exe`
+> `NezumiHole\src-tauri\target\release\nezumi-hole.exe`
 
 ## 插画管理
 
@@ -82,3 +82,4 @@ pnpm tauri build
 - 数据库位置：`%APPDATA%/com.tssh.nezumi-hole/nezumihole.db`
 - 清空数据重来：删除上述 db 文件，重启应用即可
 - 支持 JSON 格式导入/导出（应用内设置页面操作）
+- 支持私有服务器同步：客户端需手动填写服务器地址和同步密钥，部署说明见 `docs/sync-server-deployment.md`

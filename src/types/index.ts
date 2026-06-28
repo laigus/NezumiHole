@@ -4,6 +4,7 @@ export interface Category {
   icon: string;
   parentId: string | null;
   sortOrder: number;
+  updatedAt?: string;
 }
 
 export interface FoodItem {
@@ -21,6 +22,21 @@ export interface FoodItem {
   isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export type SyncEntityType = "category" | "food";
+
+export interface SyncTombstone {
+  entityType: SyncEntityType;
+  id: string;
+  deletedAt: string;
+}
+
+export interface AppDataSnapshot {
+  schemaVersion?: number;
+  categories: Category[];
+  foods: FoodItem[];
+  tombstones?: SyncTombstone[];
 }
 
 export const FOOD_ILLUSTRATION_COUNT = 32;

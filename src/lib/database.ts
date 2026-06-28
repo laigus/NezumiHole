@@ -1,4 +1,4 @@
-import type { Category, FoodItem } from "@/types";
+import type { AppDataSnapshot, Category, FoodItem, SyncEntityType, SyncTombstone } from "@/types";
 import { randomIllustration } from "@/types";
 import { initialCategories } from "@/data/initial-categories";
 import { initialFoods } from "@/data/initial-foods";
@@ -57,8 +57,20 @@ async function initSqliteTables() {
     )
   `);
 
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS sync_tombstones (
+      entityType TEXT NOT NULL,
+      id TEXT NOT NULL,
+      deletedAt TEXT NOT NULL,
+      PRIMARY KEY (entityType, id)
+    )
+  `);
+
   try {
     await db.execute("ALTER TABLE food_items ADD COLUMN illustration INTEGER NOT NULL DEFAULT 1");
+  } catch { /* column already exists */ }
+  try {
+    await db.execute("ALTER TABLE categories ADD COLUMN updatedAt TEXT NOT NULL DEFAULT ''");
   } catch { /* column already exists */ }
 
   const countResult = await db.select<{ count: number }[]>(
@@ -85,16 +97,37 @@ async function sqlInsertFood(db: NonNullable<typeof sqliteDb>, food: FoodItem) {
     [food.region, food.location, food.source, food.rating, food.notes,
      JSON.stringify(food.images), food.id],
   );
+  await db.execute("DELETE FROM sync_tombstones WHERE entityType = 'food' AND id = $1", [food.id]);
+}
+
+async function sqlInsertCategory(db: NonNullable<typeof sqliteDb>, cat: Category) {
+  await db.execute(
+    "INSERT OR REPLACE INTO categories (id, name, icon, parentId, sortOrder, updatedAt) VALUES ($1, $2, $3, $4, $5, $6)",
+    [cat.id, cat.name, cat.icon, cat.parentId, cat.sortOrder, cat.updatedAt || new Date().toISOString()],
+  );
+  await db.execute("DELETE FROM sync_tombstones WHERE entityType = 'category' AND id = $1", [cat.id]);
+}
+
+async function upsertTombstone(entityType: SyncEntityType, id: string, deletedAt = new Date().toISOString()) {
+  if (!isTauri()) {
+    memTombstones = mergeTombstones(memTombstones, [{ entityType, id, deletedAt }]);
+    return;
+  }
+  const db = await getSqliteDb();
+  await db.execute(
+    `INSERT INTO sync_tombstones (entityType, id, deletedAt)
+     VALUES ($1, $2, $3)
+     ON CONFLICT(entityType, id) DO UPDATE SET deletedAt = excluded.deletedAt
+     WHERE excluded.deletedAt > sync_tombstones.deletedAt`,
+    [entityType, id, deletedAt],
+  );
 }
 
 async function seedSqliteData() {
   const db = sqliteDb!;
   for (const cat of initialCategories) {
     try {
-      await db.execute(
-        "INSERT OR REPLACE INTO categories (id, name, icon, parentId, sortOrder) VALUES ($1, $2, $3, $4, $5)",
-        [cat.id, cat.name, cat.icon, cat.parentId, cat.sortOrder],
-      );
+      await sqlInsertCategory(db, cat);
     } catch (e) {
       console.error(`[seed] category ${cat.id} failed:`, e);
     }
@@ -129,6 +162,19 @@ function rowToFoodItem(row: RawFoodRow): FoodItem {
 
 let memCategories: Category[] = [...initialCategories];
 let memFoods: FoodItem[] = [...initialFoods];
+let memTombstones: SyncTombstone[] = [];
+
+function mergeTombstones(existing: SyncTombstone[], incoming: SyncTombstone[]) {
+  const byKey = new Map<string, SyncTombstone>();
+  for (const item of [...existing, ...incoming]) {
+    const key = `${item.entityType}:${item.id}`;
+    const current = byKey.get(key);
+    if (!current || item.deletedAt > current.deletedAt) {
+      byKey.set(key, item);
+    }
+  }
+  return [...byKey.values()];
+}
 
 // ==================== Unified API ====================
 
@@ -136,6 +182,12 @@ export async function fetchCategories(): Promise<Category[]> {
   if (!isTauri()) return [...memCategories].sort((a, b) => a.sortOrder - b.sortOrder);
   const db = await getSqliteDb();
   return db.select<Category[]>("SELECT * FROM categories ORDER BY sortOrder");
+}
+
+export async function fetchTombstones(): Promise<SyncTombstone[]> {
+  if (!isTauri()) return [...memTombstones];
+  const db = await getSqliteDb();
+  return db.select<SyncTombstone[]>("SELECT entityType, id, deletedAt FROM sync_tombstones");
 }
 
 export async function fetchFoods(): Promise<FoodItem[]> {
@@ -146,17 +198,20 @@ export async function fetchFoods(): Promise<FoodItem[]> {
 }
 
 export async function insertCategory(cat: Category): Promise<void> {
-  if (!isTauri()) { memCategories.push(cat); return; }
+  const withUpdatedAt = { ...cat, updatedAt: cat.updatedAt || new Date().toISOString() };
+  if (!isTauri()) {
+    memCategories.push(withUpdatedAt);
+    memTombstones = memTombstones.filter((t) => !(t.entityType === "category" && t.id === cat.id));
+    return;
+  }
   const db = await getSqliteDb();
-  await db.execute(
-    "INSERT INTO categories (id, name, icon, parentId, sortOrder) VALUES ($1, $2, $3, $4, $5)",
-    [cat.id, cat.name, cat.icon, cat.parentId, cat.sortOrder],
-  );
+  await sqlInsertCategory(db, withUpdatedAt);
 }
 
 export async function updateCategory(id: string, updates: Partial<Category>): Promise<void> {
+  const updatedAt = new Date().toISOString();
   if (!isTauri()) {
-    memCategories = memCategories.map((c) => (c.id === id ? { ...c, ...updates } : c));
+    memCategories = memCategories.map((c) => (c.id === id ? { ...c, ...updates, updatedAt } : c));
     return;
   }
   const db = await getSqliteDb();
@@ -167,6 +222,7 @@ export async function updateCategory(id: string, updates: Partial<Category>): Pr
   if (updates.icon !== undefined) { fields.push(`icon = $${i++}`); values.push(updates.icon); }
   if (updates.parentId !== undefined) { fields.push(`parentId = $${i++}`); values.push(updates.parentId); }
   if (updates.sortOrder !== undefined) { fields.push(`sortOrder = $${i++}`); values.push(updates.sortOrder); }
+  fields.push(`updatedAt = $${i++}`); values.push(updatedAt);
   if (fields.length > 0) {
     values.push(id);
     await db.execute(`UPDATE categories SET ${fields.join(", ")} WHERE id = $${i}`, values);
@@ -174,13 +230,22 @@ export async function updateCategory(id: string, updates: Partial<Category>): Pr
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  if (!isTauri()) { memCategories = memCategories.filter((c) => c.id !== id); return; }
+  if (!isTauri()) {
+    memCategories = memCategories.filter((c) => c.id !== id);
+    await upsertTombstone("category", id);
+    return;
+  }
   const db = await getSqliteDb();
   await db.execute("DELETE FROM categories WHERE id = $1", [id]);
+  await upsertTombstone("category", id);
 }
 
 export async function insertFood(food: FoodItem): Promise<void> {
-  if (!isTauri()) { memFoods.unshift(food); return; }
+  if (!isTauri()) {
+    memFoods.unshift(food);
+    memTombstones = memTombstones.filter((t) => !(t.entityType === "food" && t.id === food.id));
+    return;
+  }
   const db = await getSqliteDb();
   await sqlInsertFood(db, food);
 }
@@ -214,9 +279,14 @@ export async function updateFoodItem(id: string, updates: Partial<FoodItem>): Pr
 }
 
 export async function deleteFoodItem(id: string): Promise<void> {
-  if (!isTauri()) { memFoods = memFoods.filter((f) => f.id !== id); return; }
+  if (!isTauri()) {
+    memFoods = memFoods.filter((f) => f.id !== id);
+    await upsertTombstone("food", id);
+    return;
+  }
   const db = await getSqliteDb();
   await db.execute("DELETE FROM food_items WHERE id = $1", [id]);
+  await upsertTombstone("food", id);
 }
 
 export async function toggleFoodFavorite(id: string): Promise<boolean> {
@@ -238,28 +308,35 @@ export async function toggleFoodFavorite(id: string): Promise<boolean> {
 export async function exportAllData(): Promise<string> {
   const categories = await fetchCategories();
   const foods = await fetchFoods();
-  return JSON.stringify({ categories, foods }, null, 2);
+  const tombstones = await fetchTombstones();
+  return JSON.stringify({ schemaVersion: 2, categories, foods, tombstones }, null, 2);
 }
 
 export async function importData(jsonStr: string): Promise<{ categories: number; foods: number }> {
-  const data = JSON.parse(jsonStr) as { categories: Category[]; foods: FoodItem[] };
+  const data = JSON.parse(jsonStr) as AppDataSnapshot;
+  const tombstones = data.tombstones || [];
   if (!isTauri()) {
-    memCategories = data.categories;
+    memCategories = data.categories.map((cat) => ({ ...cat, updatedAt: cat.updatedAt || new Date().toISOString() }));
     memFoods = data.foods;
+    memTombstones = tombstones;
     return { categories: data.categories.length, foods: data.foods.length };
   }
   const db = await getSqliteDb();
   await db.execute("DELETE FROM food_items");
   await db.execute("DELETE FROM categories");
+  await db.execute("DELETE FROM sync_tombstones");
   for (const cat of data.categories) {
-    await db.execute(
-      "INSERT INTO categories (id, name, icon, parentId, sortOrder) VALUES ($1, $2, $3, $4, $5)",
-      [cat.id, cat.name, cat.icon, cat.parentId, cat.sortOrder],
-    );
+    await sqlInsertCategory(db, cat);
   }
   for (const food of data.foods) {
     const f = { ...food, illustration: food.illustration || randomIllustration() };
     await sqlInsertFood(db, f);
+  }
+  for (const tombstone of tombstones) {
+    await db.execute(
+      "INSERT OR REPLACE INTO sync_tombstones (entityType, id, deletedAt) VALUES ($1, $2, $3)",
+      [tombstone.entityType, tombstone.id, tombstone.deletedAt],
+    );
   }
   return { categories: data.categories.length, foods: data.foods.length };
 }

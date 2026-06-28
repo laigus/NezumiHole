@@ -99,7 +99,7 @@ export function ThemeSwitcher({
               whileTap={{ scale: 0.98 }}
             >
               <Database size={18} />
-              <span>数据导入 / 导出</span>
+              <span>数据导入 / 导出 / 同步</span>
             </motion.button>
           </div>
         </div>

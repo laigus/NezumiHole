@@ -1,7 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, Upload, Database, Check, AlertCircle } from "lucide-react";
+import { X, Download, Upload, Database, Check, AlertCircle, RefreshCw, Save, Server } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import {
+  loadSyncConfig,
+  normalizeServerUrl,
+  saveSyncConfig,
+  syncWithServer,
+  type SyncConfig,
+} from "@/lib/sync";
 
 interface DataManagerProps {
   isOpen: boolean;
@@ -18,6 +25,12 @@ interface ImportFile {
 export function DataManager({ isOpen, onClose, onExport, onImport }: DataManagerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [syncConfig, setSyncConfig] = useState<SyncConfig>(() => loadSyncConfig());
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setSyncConfig(loadSyncConfig());
+  }, [isOpen]);
 
   const handleExport = async () => {
     try {
@@ -86,6 +99,31 @@ export function DataManager({ isOpen, onClose, onExport, onImport }: DataManager
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleSaveSyncConfig = () => {
+    const next = { ...syncConfig, serverUrl: normalizeServerUrl(syncConfig.serverUrl) };
+    saveSyncConfig(next);
+    setSyncConfig(next);
+    setStatus({ type: "success", message: "同步配置已保存到本机" });
+  };
+
+  const handleSyncNow = async () => {
+    try {
+      setSyncing(true);
+      const nextConfig = { ...syncConfig, serverUrl: normalizeServerUrl(syncConfig.serverUrl) };
+      const localData = JSON.parse(await onExport());
+      const result = await syncWithServer(nextConfig, localData);
+      await onImport(JSON.stringify(result.snapshot));
+      const savedConfig = { ...nextConfig, lastRevision: result.revision };
+      saveSyncConfig(savedConfig);
+      setSyncConfig(savedConfig);
+      setStatus({ type: "success", message: `${result.message}，revision ${result.revision}` });
+    } catch (err) {
+      setStatus({ type: "error", message: `同步失败：${err}` });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -109,7 +147,7 @@ export function DataManager({ isOpen, onClose, onExport, onImport }: DataManager
             </button>
 
             <h2 className="settings-title">
-              <Database size={22} /> 数据管理
+              <Database size={22} /> 数据管理与同步
             </h2>
 
             <div className="data-actions">
@@ -143,6 +181,43 @@ export function DataManager({ isOpen, onClose, onExport, onImport }: DataManager
               onChange={handleImport}
               style={{ display: "none" }}
             />
+
+            <div className="settings-section sync-settings">
+              <h3 className="settings-subtitle">
+                <Server size={18} /> 服务器同步
+              </h3>
+              <input
+                className="form-input"
+                type="url"
+                value={syncConfig.serverUrl}
+                onChange={(e) => setSyncConfig((prev) => ({ ...prev, serverUrl: e.target.value }))}
+                placeholder="https://your-sync-server.example.com"
+              />
+              <input
+                className="form-input"
+                type="password"
+                value={syncConfig.token}
+                onChange={(e) => setSyncConfig((prev) => ({ ...prev, token: e.target.value }))}
+                placeholder="同步密钥（如服务器启用）"
+              />
+              <div className="sync-actions">
+                <motion.button
+                  className="form-btn form-btn-cancel"
+                  onClick={handleSaveSyncConfig}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Save size={16} /> 保存配置
+                </motion.button>
+                <motion.button
+                  className="form-btn form-btn-submit"
+                  onClick={handleSyncNow}
+                  disabled={syncing}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <RefreshCw size={16} /> {syncing ? "同步中..." : "立即同步"}
+                </motion.button>
+              </div>
+            </div>
 
             <AnimatePresence>
               {status && (

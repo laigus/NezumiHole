@@ -46,5 +46,10 @@ WixTools/
 *.backup.json
 nezumihole-backup-*.json
 
+# Sync server runtime data
+sync-server/data/
+sync-server/*.db
+.sync-token*.txt
+
 # Python virtual environment
 .venv/
