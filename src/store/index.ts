@@ -128,15 +128,16 @@ export function useAppStore() {
   }, [foods, filteredFoods, selectedCategoryId]);
 
   const addCat = useCallback(async (data: Omit<Category, "id">) => {
-    const cat: Category = { ...data, id: uuidv4() };
+    const cat: Category = { ...data, id: uuidv4(), updatedAt: new Date().toISOString() };
     await insertCategory(cat);
     setCategories((prev) => [...prev, cat]);
     return cat;
   }, []);
 
   const updateCat = useCallback(async (id: string, updates: Partial<Category>) => {
-    await updateCategory(id, updates);
-    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates } : c)));
+    const updatedAt = new Date().toISOString();
+    await updateCategory(id, { ...updates, updatedAt });
+    setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...updates, updatedAt } : c)));
   }, []);
 
   const deleteCat = useCallback(async (id: string) => {

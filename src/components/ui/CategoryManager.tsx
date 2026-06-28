@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Pencil, Trash2, FolderTree } from "lucide-react";
 import type { Category } from "@/types";
+import { categoryIconOptions, normalizeCategoryIcon, renderCategoryIcon } from "@/lib/category-icons";
 
 interface CategoryManagerProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ export function CategoryManager({
   const startEdit = (cat: Category) => {
     setEditingId(cat.id);
     setEditName(cat.name);
-    setEditIcon(cat.icon);
+    setEditIcon(normalizeCategoryIcon(cat.icon));
   };
 
   const saveEdit = async () => {
@@ -51,7 +52,7 @@ export function CategoryManager({
   const startAdd = (parentId: string | null) => {
     setAddingParentId(parentId);
     setNewName("");
-    setNewIcon(parentId ? "map-pin" : "package");
+    setNewIcon(parentId ? "map-pin" : "book-open");
   };
 
   const saveAdd = async () => {
@@ -162,12 +163,7 @@ export function CategoryManager({
                   autoFocus
                   onKeyDown={(e) => e.key === "Enter" && saveAdd()}
                 />
-                <input
-                  className="form-input"
-                  value={newIcon}
-                  onChange={(e) => setNewIcon(e.target.value)}
-                  placeholder="图标名称"
-                />
+                <IconPicker value={newIcon} onChange={setNewIcon} />
                 <div className="catmgr-add-actions">
                   <motion.button
                     className="form-btn form-btn-cancel"
@@ -228,12 +224,7 @@ function CatRow({
           onKeyDown={(e) => e.key === "Enter" && onSaveEdit()}
           autoFocus
         />
-        <input
-          className="form-input catmgr-edit-input catmgr-edit-icon"
-          value={editIcon}
-          onChange={(e) => onEditIcon(e.target.value)}
-          placeholder="icon"
-        />
+        <IconPicker value={editIcon} onChange={onEditIcon} compact />
         <motion.button className="catmgr-btn" onClick={onSaveEdit} whileTap={{ scale: 0.9 }}>
           保存
         </motion.button>
@@ -247,7 +238,8 @@ function CatRow({
   return (
     <div className="catmgr-row" style={{ paddingLeft: level * 24 + 12 }}>
       <span className="catmgr-name">
-        {level > 0 && "└ "}
+        {level > 0 && <span className="catmgr-branch">↳</span>}
+        <span className="catmgr-name-icon">{renderCategoryIcon(cat.icon, 16)}</span>
         {cat.name}
       </span>
       <div className="catmgr-row-actions">
@@ -258,6 +250,36 @@ function CatRow({
           <Trash2 size={14} />
         </motion.button>
       </div>
+    </div>
+  );
+}
+
+function IconPicker({
+  value,
+  onChange,
+  compact = false,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  compact?: boolean;
+}) {
+  const normalizedValue = normalizeCategoryIcon(value);
+
+  return (
+    <div className={`catmgr-icon-picker ${compact ? "catmgr-icon-picker-compact" : ""}`}>
+      {categoryIconOptions.map(({ id, label }) => (
+        <motion.button
+          key={id}
+          type="button"
+          className={`catmgr-icon-option ${normalizedValue === id ? "catmgr-icon-option-active" : ""}`}
+          title={label}
+          aria-label={label}
+          onClick={() => onChange(id)}
+          whileTap={{ scale: 0.92 }}
+        >
+          {renderCategoryIcon(id, 18)}
+        </motion.button>
+      ))}
     </div>
   );
 }

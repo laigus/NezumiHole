@@ -1,24 +1,12 @@
 import { motion } from "framer-motion";
 import {
-  Dog,
-  UtensilsCrossed,
-  Candy,
-  CupSoda,
-  Sparkles,
   Heart,
   Dices,
   Settings,
   Home,
 } from "lucide-react";
 import type { Category } from "@/types";
-
-const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
-  dog: Dog,
-  "utensils-crossed": UtensilsCrossed,
-  candy: Candy,
-  "cup-soda": CupSoda,
-  sparkles: Sparkles,
-};
+import { renderCategoryIcon } from "@/lib/category-icons";
 
 interface SidebarProps {
   categories: Category[];
@@ -66,18 +54,15 @@ export function Sidebar({
 
         <div className="sidebar-divider" />
 
-        {categories.map((cat) => {
-          const Icon = iconMap[cat.icon];
-          return (
-            <SidebarItem
-              key={cat.id}
-              icon={Icon ? <Icon size={20} /> : <span>{cat.icon}</span>}
-              label={cat.name}
-              active={selectedCategoryId === cat.id}
-              onClick={() => onSelectCategory(cat.id)}
-            />
-          );
-        })}
+        {categories.map((cat) => (
+          <SidebarItem
+            key={cat.id}
+            icon={renderCategoryIcon(cat.icon)}
+            label={cat.name}
+            active={selectedCategoryId === cat.id}
+            onClick={() => onSelectCategory(cat.id)}
+          />
+        ))}
 
         <div className="sidebar-divider" />
 

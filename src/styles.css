@@ -2063,7 +2063,7 @@
    ============================================ */
 
 .catmgr-modal {
-  max-width: 520px;
+  max-width: 560px;
   max-height: 80vh;
 }
 
@@ -2100,6 +2100,26 @@
   font-size: 0.9rem;
   color: var(--color-text-primary);
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.catmgr-name-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.catmgr-branch {
+  width: 14px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
 }
 
 .catmgr-row-actions {
@@ -2139,6 +2159,47 @@
 
 .catmgr-edit-icon {
   max-width: 100px;
+}
+
+.catmgr-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(9, 32px);
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-input);
+  background: var(--color-bg-card);
+}
+
+.catmgr-icon-picker-compact {
+  grid-template-columns: repeat(6, 30px);
+  max-width: 220px;
+}
+
+.catmgr-icon-option {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.catmgr-icon-picker-compact .catmgr-icon-option {
+  width: 30px;
+  height: 30px;
+}
+
+.catmgr-icon-option:hover,
+.catmgr-icon-option-active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
 }
 
 .catmgr-add-sub {
