@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import type { UIEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -35,6 +36,7 @@ export default function App() {
   const [showFoodForm, setShowFoodForm] = useState(false);
   const [editingFood, setEditingFood] = useState<FoodItem | null>(null);
   const [deletingFood, setDeletingFood] = useState<FoodItem | null>(null);
+  const [isMainScrolled, setIsMainScrolled] = useState(false);
 
   const handleSelectCategory = useCallback(
     (id: string | null) => {
@@ -104,6 +106,10 @@ export default function App() {
     setEditingFood(null);
     setShowFoodForm(true);
   }, [sound]);
+
+  const handleMainScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+    setIsMainScrolled(event.currentTarget.scrollTop > 2);
+  }, []);
 
   const handleThemeSwitch = useCallback(
     (id: Parameters<typeof theme.switchTheme>[0]) => {
@@ -190,7 +196,10 @@ export default function App() {
           onSelect={(id) => { sound.play("click"); store.setSelectedSubCategoryId(id); }}
         />
 
-        <div className="main-scroll-area">
+        <div
+          className={`main-scroll-area ${isMainScrolled ? "main-scroll-area-scrolled" : ""}`}
+          onScroll={handleMainScroll}
+        >
           <motion.div className="food-grid" layout>
             <AnimatePresence mode="popLayout">
               {displayedFoods.map((food, index) => (
