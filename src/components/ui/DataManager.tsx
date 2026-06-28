@@ -1,12 +1,18 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, Upload, Database, Check, AlertCircle } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
 
 interface DataManagerProps {
   isOpen: boolean;
   onClose: () => void;
   onExport: () => Promise<string>;
   onImport: (jsonStr: string) => Promise<{ categories: number; foods: number }>;
+}
+
+interface ImportFile {
+  path: string;
+  data: string;
 }
 
 export function DataManager({ isOpen, onClose, onExport, onImport }: DataManagerProps) {
@@ -16,16 +22,53 @@ export function DataManager({ isOpen, onClose, onExport, onImport }: DataManager
   const handleExport = async () => {
     try {
       const data = await onExport();
+      const fileName = `nezumihole-backup-${new Date().toISOString().slice(0, 10)}.json`;
+
+      if ("__TAURI_INTERNALS__" in window) {
+        const savedPath = await invoke<string | null>("export_data_to_file", {
+          data,
+          fileName,
+        });
+
+        if (savedPath) {
+          setStatus({ type: "success", message: `数据已导出到：${savedPath}` });
+        }
+        return;
+      }
+
       const blob = new Blob([data], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `nezumihole-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
       setStatus({ type: "success", message: "数据导出成功！" });
     } catch (err) {
       setStatus({ type: "error", message: `导出失败：${err}` });
+    }
+  };
+
+  const importText = async (text: string, path?: string) => {
+    const result = await onImport(text);
+    setStatus({
+      type: "success",
+      message: `导入成功！${result.categories} 个分类，${result.foods} 条美食记录${path ? `\n${path}` : ""}`,
+    });
+  };
+
+  const handleImportClick = async () => {
+    if (!("__TAURI_INTERNALS__" in window)) {
+      fileInputRef.current?.click();
+      return;
+    }
+
+    try {
+      const file = await invoke<ImportFile | null>("import_data_from_file");
+      if (!file) return;
+      await importText(file.data, file.path);
+    } catch (err) {
+      setStatus({ type: "error", message: `导入失败：${err}` });
     }
   };
 
@@ -35,11 +78,7 @@ export function DataManager({ isOpen, onClose, onExport, onImport }: DataManager
 
     try {
       const text = await file.text();
-      const result = await onImport(text);
-      setStatus({
-        type: "success",
-        message: `导入成功！${result.categories} 个分类，${result.foods} 条美食记录`,
-      });
+      await importText(text);
     } catch (err) {
       setStatus({ type: "error", message: `导入失败：${err}` });
     }
@@ -87,7 +126,7 @@ export function DataManager({ isOpen, onClose, onExport, onImport }: DataManager
 
               <motion.button
                 className="data-action-card"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleImportClick}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

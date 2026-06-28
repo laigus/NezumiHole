@@ -18,14 +18,15 @@
 ## 常用命令
 
 ```bash
+$env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
 pnpm install            # 安装依赖
 pnpm dev                # 仅前端开发服务器 (localhost:1420)
 pnpm tauri dev          # 启动桌面应用开发模式（含热重载）
 pnpm tauri build        # 打包为 exe 安装包
 ```
 
-> **PowerShell 执行策略**：若提示"禁止运行脚本"，在终端运行：
-> `Set-ExecutionPolicy Bypass -Scope Process`
+> **打包为 exe 后路径**：
+> `D:\AI\NezumiHole\src-tauri\target\release\nezumi-hole.exe`
 
 ## 插画管理
 
